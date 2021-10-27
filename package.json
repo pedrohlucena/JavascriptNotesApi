@@ -6,6 +6,9 @@
     "start": "node ./bin/www",
     "start-mongo": "sudo systemctl start mongod"
   },
+  "engines": {
+    "node": "14.17.6"
+  },
   "dependencies": {
     "bcrypt": "^5.0.1",
     "cookie-parser": "~1.4.4",
