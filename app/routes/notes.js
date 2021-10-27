@@ -11,6 +11,7 @@ router.post('/', withAuth, async(req,res) => {
         await note.save()
         res.status(200).json(note)
     } catch(error) {
+        console.error(error)
         res.status(500).json({error: 'Problem to create a new note'})
     }
 })
@@ -26,6 +27,7 @@ router.get('/search', withAuth, async(req, res) => {
 
         res.json(notes)
     } catch (error) {
+        console.error(error)
         res.status(500).json({error: error})
     }
 })
@@ -41,35 +43,30 @@ router.get('/:id', withAuth, async(req,res) => {
             res.status(403).json({error: 'Permission denied'})
         }
     } catch (error) {
+        console.error(error)
         res.status(500).json({error: 'Problem to get a note'})
     }
 })
-
-const isOwner = (user, note) => {
-    if (JSON.stringify(user._id) == JSON.stringify(note.author._id)) {
-        return true
-    } else {
-        return false
-    }
-}
 
 router.get('/', withAuth, async(req, res) => {
     try {
       let notes = await Note.find({ author: req.user})
       res.json(notes)
     } catch (error) {
-      res.status(500).json({error: error})
+        console.error(error)
+        res.status(500).json({error: error})
     }
 })
 
 router.put('/:id', withAuth, async(req,res) => {
     let { title, body } = req.body
     let { id } = req.params
+    console.log(req.user)
 
     try {
         let note = await Note.findById(id)
         if (isOwner(req.user, note)) {
-            let note = await Note.findOneAndUpdate(id, 
+            let note = await Note.findOneAndUpdate( id, 
                 { $set: {title: title, body: body} },
                 { upsert: true, 'new': true }
             )
@@ -79,25 +76,35 @@ router.put('/:id', withAuth, async(req,res) => {
             res.status(403).json({error: 'Permission denied'})
         }
     } catch (error) {
+        console.error(error)
         res.status(500).json({error: 'Problem to update a note'})
     }
 })
 
 router.delete('/:id', withAuth, async(req, res) => {
     let { id } = req.params
+    console.log(id)
     
     try {
         let note = await Note.findById(id)
 
         if (isOwner(req.user, note)) {
             await note.delete()
-            res.status(403).json({message: 'Message deleted!'})
+            res.status(200).json({message: 'Message deleted!'})
         } else {
             res.status(403).json({error: 'Permission denied'})
         }
     } catch (error) {
+        console.error(error)
         res.status(500).json({error: 'Problem to delete a note'})
     }
 })
+
+const isOwner = (user, note) => {
+    if(JSON.stringify(user._id) == JSON.stringify(note.author._id))
+      return true;
+    else
+      return false;
+}
 
 module.exports = router
